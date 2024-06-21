@@ -22,6 +22,7 @@ public class HotplaceServiceImpl implements HotplaceService {
 	private final HotplaceMapper hotplaceMapper;
 	private final UserService userService;
 	private final ImgUtils imgUtils;
+	private static final String HOTPLACE_PATH = "hotplace";
 
 	public HotplaceServiceImpl(HotplaceMapper hotplaceMapper, UserService userService, ImgUtils imgUtils) {
 		this.hotplaceMapper = hotplaceMapper;
@@ -32,7 +33,7 @@ public class HotplaceServiceImpl implements HotplaceService {
 	@Override
 	@Transactional
 	public void insertHotplace(WriteHotplaceRequest hotplace, MultipartFile img) {
-		String imgPath = imgUtils.saveImage(img, "hotplace");
+		String imgPath = imgUtils.saveImage(img, HOTPLACE_PATH);
 		int result = hotplaceMapper.insertHotplace(HotplaceDto.builder()
 				.title(hotplace.getTitle())
 				.img(imgPath)
@@ -87,9 +88,9 @@ public class HotplaceServiceImpl implements HotplaceService {
 		if (img != null && !img.isEmpty()) {
 			originPath = hotplaceMapper.getImgById(hotplace.getId());
 			if (originPath != null && !originPath.isEmpty()) {
-				imgUtils.deleteImage(originPath, "hotplace");
+				imgUtils.deleteImage(originPath, HOTPLACE_PATH);
 			}
-			String imgPath = imgUtils.saveImage(img, "hotplace");
+			String imgPath = imgUtils.saveImage(img, HOTPLACE_PATH);
 			hotplace.setImg(imgPath);
 		}
 		int result = hotplaceMapper.updateHotplace(hotplace);
@@ -107,7 +108,7 @@ public class HotplaceServiceImpl implements HotplaceService {
 			throw new InvalidInputException(BaseResponseCode.DATABASE_REQUEST_FAILED);
 		}
 		if (originPath != null && !originPath.isEmpty()) {
-			imgUtils.deleteImage(originPath, "hotplace");
+			imgUtils.deleteImage(originPath, HOTPLACE_PATH);
 		}
 	}
 
@@ -136,7 +137,7 @@ public class HotplaceServiceImpl implements HotplaceService {
 		if (result == null) {
 			//없으면 진행
 			try {
-				int rst= hotplaceMapper.addLike(hotplaceLike);
+				hotplaceMapper.addLike(hotplaceLike);
 				hotplaceMapper.plusLikeCount(hotplaceLike.getHotplacesId());
 			} catch (Exception e) {
 				throw new InvalidInputException(BaseResponseCode.DATABASE_REQUEST_FAILED);
@@ -153,7 +154,7 @@ public class HotplaceServiceImpl implements HotplaceService {
 		if (result != null) {
 			//있으면 진행
 			try {
-				int rst= hotplaceMapper.deleteLike(hotplaceLike);
+				hotplaceMapper.deleteLike(hotplaceLike);
 				hotplaceMapper.minusLikeCount(hotplaceLike.getHotplacesId());
 			} catch (Exception e) {
 				throw new InvalidInputException(BaseResponseCode.DATABASE_REQUEST_FAILED);
